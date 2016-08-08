@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <statemodel.h>
+#include <boardmodel.h>
 
 int main(int argc, char *argv[])
 {
@@ -12,9 +13,11 @@ int main(int argc, char *argv[])
     BoardState state;
     state.setStoneAt(3, Stone::Black);
     state.setStoneAt(4, Stone::White);
-    StateModel model(state);
+    StateModel stateModel(state);
+    BoardModel& boardModel = BoardModel::Inst();
     auto* ctx = engine.rootContext();
-    ctx->setContextProperty("myModel", &model);
+    ctx->setContextProperty("stateModel", &stateModel);
+    ctx->setContextProperty("boardModel", &boardModel);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     return app.exec();

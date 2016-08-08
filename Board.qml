@@ -25,38 +25,87 @@ Rectangle {
             columns: 7
 
             Repeater {
-                model: myModel
+                model: stateModel
 
                 delegate: Item {
+                    id: field
                     width: parent.width / parent.columns
                     height: parent.height / parent.rows
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        drag.target: painter
+                    }
+
+                    DropArea {
+                        id: dropArea
+                        keys: ["text/plain"]
+                        anchors.fill: parent
+
+                        onDropped: {
+                        }
+                    }
 
                     Rectangle {
                         id: painter
                         color: stone
                         visible: isOccupied
                         anchors.fill: parent
-                        Text {
-                            text: "" + position
+
+                        property bool dragActive: mouseArea.drag.active
+                        Drag.mimeData: { "text/plain": "bla" }
+                        Drag.active: mouseArea.drag.active
+                        Drag.hotSpot.y: 0
+                        Drag.hotSpot.x: 0
+                        Drag.dragType: Drag.Automatic
+
+                        Drag.onDragStarted: {
+                            console.debug("Start drag from " + position);
+                            stateModel.startMove(position);
                         }
 
-                        /*MouseArea {
-                            id: mouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            drag.target: grid
+                        Drag.onDragFinished: {
+                            console.debug("Finish drag on " + position);
                         }
+
 
                         states: [
+
                             State {
-                                name: "hover"
-                                when: mouseArea.containsMouse
+                                name: "isDragged"
+                                when: painter.dragActive
+                                ParentChange { target: painter; parent: playRect }
+                                //AnchorChanges { target: painter; undefined; }
+                            },
+                            State {
+                                name: "mouseHover"
+                                when: mouseArea.containsMouse || mouseArea.drag.active
                                 PropertyChanges {
                                     target: painter
-                                    color: "grey"
+                                    color: mouseArea.drag.active? "green": (dropArea.containsDrag? "red" : "grey")
+                                }
+                            },
+                            State {
+                                name: "draggedOver"
+                                when: dropArea.containsDrag && !isOccupied && stateModel.isMoving && stateModel.isValidMoveEnd(position)
+                                PropertyChanges {
+                                    target: painter
+                                    color: "yellow"
+                                    visible: true
+                                }
+                            },
+                            State {
+                                name: "possibleTarget"
+                                when: !isOccupied && stateModel.isMoving && stateModel.isValidMoveEnd(position)
+                                PropertyChanges {
+                                    target: painter
+                                    color: "blue"
+                                    visible: true
                                 }
                             }
-                        ]*/
+                        ]
                     }
                 }
             }
