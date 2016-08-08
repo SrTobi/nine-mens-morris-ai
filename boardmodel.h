@@ -33,6 +33,8 @@ public:
     Q_INVOKABLE bool isField(const QPoint& pos) const;
 private:
     BoardModel();
+    BoardModel(const BoardModel&) = delete; // non construction-copyable
+    BoardModel& operator=(const BoardModel&) = delete; // non copyable
 
     const QVector<QPoint> mDirections;
     QVector<QVector<int>> mPositionToIndexMapping;
