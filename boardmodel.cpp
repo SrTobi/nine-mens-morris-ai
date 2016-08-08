@@ -39,20 +39,41 @@ const QVector<QPoint> &BoardModel::directions() const
     return mDirections;
 }
 
+bool BoardModel::isOnBoard(const QPoint &pos) const
+{
+    int x = pos.x();
+    int y = pos.y();
+    return 0 <= x && x < BOARD_WIDTH
+        && 0 <= y && y < BOARD_HEIGHT;
+}
+
 bool BoardModel::isField(const QPoint &pos) const
 {
     int x = pos.x();
     int y = pos.y();
-    if(x < 0 || BOARD_WIDTH <= x
-        || y < 0 || BOARD_HEIGHT <= y)
-        return false;
-    return mPositionToIndexMapping[x][y] != INVALID_FIELD;
+    return isOnBoard(pos)
+            && mPositionToIndexMapping[x][y] != INVALID_FIELD;
 }
+
+bool BoardModel::areAdjacentFields(const QPoint &p1, const QPoint &p2) const
+{
+    return areAdjacentFields(positionToIndex(p1), positionToIndex(p2));
+}
+
+bool BoardModel::areAdjacentFields(int i1, int i2) const
+{
+    return mAdjacentMatrix[i1][i2];
+}
+
+/*QPoint BoardModel::boardIndexToPosition(int index) const
+{
+    return QPoint(index % BOARD_WIDTH, index / BOARD_WIDTH);
+}*/
 
 BoardModel::BoardModel()
     : mDirections{NORTH, EAST, SOUTH, WEST}
     , mPositionToIndexMapping(BOARD_WIDTH, QVector<int>(BOARD_HEIGHT, INVALID_FIELD))
-    , mAdjacentMatrix(BOARD_WIDTH, QVector<bool>(BOARD_HEIGHT, false))
+    , mAdjacentMatrix(BOARD_FIELDS_NUM, QVector<bool>(BOARD_FIELDS_NUM, false))
     , mAdjacentIndexLists(BOARD_FIELDS_NUM)
     , mAdjacentPositionLists(BOARD_FIELDS_NUM)
 {
@@ -92,7 +113,7 @@ BoardModel::BoardModel()
         const int from_idx = positionToIndex(from);
         const int to_idx = positionToIndex(to);
 
-        mAdjacentMatrix[from.x()][from.y()] = true;
+        mAdjacentMatrix[from_idx][to_idx] = true;
         mAdjacentIndexLists[from_idx].push_back(to_idx);
         mAdjacentPositionLists[from_idx].push_back(to);
     };
@@ -106,7 +127,7 @@ BoardModel::BoardModel()
         for(const QPoint& dir: directions())
         {
             for(QPoint to = from + dir;
-                isField(to);
+                isOnBoard(to);
                 to += dir)
             {
                 auto field = board_template[to.x()][to.y()];

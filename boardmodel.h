@@ -7,7 +7,7 @@
 
 class BoardModel : public QObject
 {
-    Q_GADGET
+    Q_OBJECT
 public:
     static const int BOARD_FIELDS_NUM = 24;
     static const int BOARD_WIDTH = 7;
@@ -30,7 +30,10 @@ public:
     const QVector<QPoint>& fields() const;
 
     const QVector<QPoint>& directions() const;
+    Q_INVOKABLE bool isOnBoard(const QPoint& pos) const;
     Q_INVOKABLE bool isField(const QPoint& pos) const;
+    Q_INVOKABLE bool areAdjacentFields(const QPoint& p1, const QPoint& p2) const;
+    Q_INVOKABLE bool areAdjacentFields(int i1, int i2) const;
 private:
     BoardModel();
     BoardModel(const BoardModel&) = delete; // non construction-copyable
