@@ -7,13 +7,16 @@
 #include <QAbstractItemModel>
 #include "boardmodel.h"
 
+
 enum class Stone: unsigned char {
     None,
     Black,
     White
 };
 
-Q_ENUMS(Stone);
+const QString& to_string(Stone stone);
+
+//Q_ENUMS(Stone);
 
 class BoardState
 {
@@ -30,11 +33,6 @@ public:
     int blackStones() const;
 
     Stone turn() const;
-
-signals:
-
-public slots:
-
 private:
     std::array<Stone, BoardModel::BOARD_FIELDS_NUM> mFields;
     Stone mTurn;

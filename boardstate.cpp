@@ -42,3 +42,20 @@ Stone BoardState::turn() const
 {
     return mTurn;
 }
+
+const QString &to_string(Stone stone)
+{
+    static const QString black("black");
+    static const QString white("white");
+    static const QString none("none");
+
+    switch(stone)
+    {
+    case Stone::Black:
+        return black;
+    case Stone::White:
+        return white;
+    default:
+        return none;
+    }
+}
