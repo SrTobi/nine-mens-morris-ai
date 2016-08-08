@@ -18,7 +18,7 @@ public:
     static constexpr QPoint WEST =  QPoint(-1, 0);
 
 public:
-    static const BoardModel& Inst();
+    static BoardModel& Inst();
 
 
     Q_INVOKABLE QPoint indexToPosition(int idx) const;

@@ -2,7 +2,7 @@
 
 static const int INVALID_FIELD = -1;
 
-const BoardModel &BoardModel::Inst()
+BoardModel &BoardModel::Inst()
 {
     static BoardModel model;
     return model;
