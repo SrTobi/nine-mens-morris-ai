@@ -107,15 +107,37 @@ void StateModel::endMove(const QPoint &to)
     mMoveStart.reset();
     emit isMovingChanged();
 
+    if(!isValidMove(from, to)) {
+        return;
+    }
+
+
     int from_row =  from.x() + from.y() * BoardModel::BOARD_WIDTH;
     int to_row =    to.x() + to.y() * BoardModel::BOARD_WIDTH;
 
+    bool isAdjacent = std::abs(from_row - to_row) == 1;
+
     QModelIndex root;
-    beginMoveRows(root, from_row, from_row, root, to_row);
+    if(!isAdjacent)
+    {
+        beginRemoveRows(root, to_row, to_row);
+        endRemoveRows();
+        if(to_row < from_row)
+        {
+            --from_row;
+        }
+    }
+
+    beginMoveRows(root, from_row, from_row, root, to_row + ((from_row + 1 == to_row)? 1 : 0));
     Stone stone = mState.stoneAt(from);
     mState.setStoneAt(from, Stone::None);
     mState.setStoneAt(to, stone);
     endMoveRows();
+    if(!isAdjacent)
+    {
+        beginInsertRows(root, from_row, from_row);
+        endInsertRows();
+    }
 }
 
 /*

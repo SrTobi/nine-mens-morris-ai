@@ -24,6 +24,10 @@ Rectangle {
             rows: 7
             columns: 7
 
+            move: Transition {
+                NumberAnimation { properties: "x,y"; duration: 300; easing.type: Easing.InCubic }
+            }
+
             Repeater {
                 model: stateModel
 
@@ -36,7 +40,7 @@ Rectangle {
                         id: mouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        drag.target: painter
+                        drag.target: (boardModel.isField(position) && isOccupied ? painter : undefined)
                     }
 
                     DropArea {
@@ -45,6 +49,8 @@ Rectangle {
                         anchors.fill: parent
 
                         onDropped: {
+                            console.debug("dropped on " + position)
+                            stateModel.endMove(position)
                         }
                     }
 
@@ -63,13 +69,9 @@ Rectangle {
 
                         Drag.onDragStarted: {
                             console.debug("Start drag from " + position);
+
                             stateModel.startMove(position);
                         }
-
-                        Drag.onDragFinished: {
-                            console.debug("Finish drag on " + position);
-                        }
-
 
                         states: [
 
