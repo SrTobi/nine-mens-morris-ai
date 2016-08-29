@@ -5,16 +5,18 @@
 
 #include <QObject>
 #include <QAbstractItemModel>
+#include "stone.h"
 #include "boardmodel.h"
 
-
-enum class Stone: unsigned char {
-    None,
-    Black,
-    White
+enum class Phase: unsigned char {
+    Put,
+    Move,
+    Remove,
+    PutRemove,
+    End
 };
 
-const QString& to_string(Stone stone);
+const QString& to_string(Phase phase);
 
 //Q_ENUMS(Stone);
 
@@ -33,9 +35,11 @@ public:
     int blackStones() const;
 
     Stone turn() const;
+    Phase phase() const;
 private:
     std::array<Stone, BoardModel::BOARD_FIELDS_NUM> mFields;
     Stone mTurn;
+    Phase mPhase;
 };
 
 #endif // BOARDSTATE_H

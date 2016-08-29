@@ -1,7 +1,9 @@
+#include <exception>
 #include "boardstate.h"
 
 BoardState::BoardState()
-    : mTurn(Stone::None)
+    : mTurn(Stone::White)
+    , mPhase(Phase::Move)
 {
     mFields.fill(Stone::None);
 }
@@ -43,19 +45,25 @@ Stone BoardState::turn() const
     return mTurn;
 }
 
-const QString &to_string(Stone stone)
+const QString &to_string(Phase phase)
 {
-    static const QString black("black");
-    static const QString white("white");
-    static const QString none("none");
+    static const QString put("put");
+    static const QString move("move");
+    static const QString remove("remove");
+    static const QString end("end");
 
-    switch(stone)
+    switch(phase)
     {
-    case Stone::Black:
-        return black;
-    case Stone::White:
-        return white;
+    case Phase::Put:
+        return put;
+    case Phase::Move:
+        return move;
+    case Phase::PutRemove:
+    case Phase::Remove:
+        return remove;
+    case Phase::End:
+        return end;
     default:
-        return none;
+        throw std::logic_error("invalid phase!");
     }
 }
