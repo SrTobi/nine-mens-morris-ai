@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QAbstractItemModel>
 #include "stone.h"
+#include "move.h"
 #include "boardmodel.h"
 
 enum class Phase: unsigned char {
@@ -35,8 +36,22 @@ public:
     int blackStones() const;
     int stonesOf(Stone stone) const;
 
+    bool isValidMove(const Move& move);
+    void move(const Move& move);
+
+    void put(int idx);
+    void put(const QPoint& pos);
+
+    Stone millAt(int idx);
+    Stone millAt(const QPoint& pos);
+
     Stone turn() const;
+    Stone opponent() const;
+
     Phase phase() const;
+    bool hasEnded() const;
+    Stone winner() const;
+    Stone looser() const;
 private:
     std::array<Stone, BoardModel::BOARD_FIELDS_NUM> mFields;
     Stone mTurn;

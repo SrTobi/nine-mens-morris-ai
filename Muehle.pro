@@ -6,7 +6,9 @@ CONFIG += c++11
 SOURCES += main.cpp \
     boardstate.cpp \
     boardmodel.cpp \
-    statemodel.cpp
+    statemodel.cpp \
+    move.cpp \
+    stone.cpp
 
 RESOURCES += qml.qrc
 
@@ -19,4 +21,6 @@ include(deployment.pri)
 HEADERS += \
     boardstate.h \
     boardmodel.h \
-    statemodel.h
+    statemodel.h \
+    move.h \
+    stone.h

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     BoardState state;
     state.setStoneAt(3, Stone::Black);
     state.setStoneAt(4, Stone::White);
-    StateModel stateModel(state);
+    StateModel stateModel(state, true, true);
     BoardModel& boardModel = BoardModel::Inst();
     auto* ctx = engine.rootContext();
     ctx->setContextProperty("stateModel", &stateModel);

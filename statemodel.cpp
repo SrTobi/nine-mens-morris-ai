@@ -1,8 +1,10 @@
 #include "statemodel.h"
 #include "boardmodel.h"
 
-StateModel::StateModel(const BoardState& state)
+StateModel::StateModel(const BoardState& state, bool whitePlayerMovable, bool blackPlayerMovable)
     : mState(state)
+    , mBlackMovable(blackPlayerMovable)
+    , mWhiteMovable(whitePlayerMovable)
 {
 }
 
@@ -78,9 +80,14 @@ QPoint StateModel::getMoveStartPosition() const
     return *mMoveStart.data();
 }
 
-const QString &StateModel::currentPlayer() const
+const QString& StateModel::currentPlayer() const
 {
     return to_string(mState.turn());
+}
+
+const QString &StateModel::phase() const
+{
+    return to_string(mState.phase());
 }
 
 bool StateModel::isMoving() const
@@ -88,8 +95,19 @@ bool StateModel::isMoving() const
     return mMoveStart.data() != nullptr;
 }
 
+bool StateModel::isMovablePlayer(const QString &name) const
+{
+    if(name == to_string(Stone::White)) {
+        return mWhiteMovable;
+    } else if(name == to_string(Stone::Black)) {
+        return mBlackMovable;
+    }
+    return false;
+}
+
 void StateModel::startMove(const QPoint &from)
 {
+    Q_ASSERT(mState.stoneAt(from) == mState.turn());
     mMoveStart.reset(new QPoint(from));
     emit isMovingChanged();
 }
@@ -111,6 +129,9 @@ void StateModel::endMove(const QPoint &to)
         return;
     }
 
+    const auto beforeTurn = mState.turn();
+    Move move(from, to);
+
 
     int from_row =  from.x() + from.y() * BoardModel::BOARD_WIDTH;
     int to_row =    to.x() + to.y() * BoardModel::BOARD_WIDTH;
@@ -129,14 +150,43 @@ void StateModel::endMove(const QPoint &to)
     }
 
     beginMoveRows(root, from_row, from_row, root, to_row + ((from_row + 1 == to_row)? 1 : 0));
-    Stone stone = mState.stoneAt(from);
-    mState.setStoneAt(from, Stone::None);
-    mState.setStoneAt(to, stone);
+    mState.move(move);
     endMoveRows();
+
     if(!isAdjacent)
     {
         beginInsertRows(root, from_row, from_row);
         endInsertRows();
+    }
+
+    if(beforeTurn != mState.turn())
+    {
+        emit currentPlayerChanged();
+    }
+}
+
+void StateModel::put(const QPoint &to)
+{
+    const auto beforeTurn = mState.turn();
+
+    mState.put(to);
+
+    if(beforeTurn != mState.turn())
+    {
+        emit currentPlayerChanged();
+    }
+}
+
+void StateModel::remove(const QPoint &to)
+{
+    const auto beforeTurn = mState.turn();
+
+    Move move(to);
+    mState.move(move);
+
+    if(beforeTurn != mState.turn())
+    {
+        emit currentPlayerChanged();
     }
 }
 

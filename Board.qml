@@ -46,16 +46,16 @@ Rectangle {
                         id: mouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        drag.target: (boardModel.isField(position) && isOccupied ? painter : undefined)
+                        enabled: stateModel.isMovablePlayer(stone) && stone === stateModel.currentPlayer
+                        drag.target: painter
                     }
 
                     DropArea {
                         id: dropArea
-                        keys: ["text/plain"]
+                        keys: ["ninemensmorris/stone"]
                         anchors.fill: parent
 
                         onDropped: {
-                            console.debug("dropped on " + position)
                             stateModel.endMove(position)
                         }
                     }
@@ -78,15 +78,13 @@ Rectangle {
                         anchors.fill: parent
 
                         property bool dragActive: mouseArea.drag.active
-                        Drag.mimeData: { "text/plain": "bla" }
+                        Drag.mimeData: { "ninemensmorris/stone": stone}
                         Drag.active: dragActive
                         Drag.hotSpot.y: 0
                         Drag.hotSpot.x: 0
                         Drag.dragType: Drag.Automatic
 
                         Drag.onDragStarted: {
-                            console.debug("Start drag from " + position);
-
                             stateModel.startMove(position);
                         }
 
