@@ -18,6 +18,12 @@ Rectangle {
         width: size()
         height: size()
 
+        Image {
+            id: fieldImage
+            source: "media/simple-field.svg"
+            anchors.fill: parent
+        }
+
         Grid {
             id: grid
             anchors.fill: parent
@@ -54,15 +60,26 @@ Rectangle {
                         }
                     }
 
-                    Rectangle {
+                    Image {
+                        function stoneNameToImage(name) {
+                            switch(name) {
+                            case "white":
+                                return "media/white-stone.svg";
+                            case "black":
+                                return "media/black-stone.svg";
+                            default:
+                            }
+                            return "media/neutral-stone.svg";
+                        }
+
                         id: painter
-                        color: stone
+                        source: stoneNameToImage(stone)
                         visible: isOccupied
                         anchors.fill: parent
 
                         property bool dragActive: mouseArea.drag.active
                         Drag.mimeData: { "text/plain": "bla" }
-                        Drag.active: mouseArea.drag.active
+                        Drag.active: dragActive
                         Drag.hotSpot.y: 0
                         Drag.hotSpot.x: 0
                         Drag.dragType: Drag.Automatic
@@ -75,18 +92,27 @@ Rectangle {
 
                         states: [
 
-                            State {
+                            /*State {
                                 name: "isDragged"
                                 when: painter.dragActive
-                                ParentChange { target: painter; parent: playRect }
-                                //AnchorChanges { target: painter; undefined; }
-                            },
+                                AnchorChanges {
+                                    target: painter;
+                                    anchors.right: undefined;
+                                    anchors.top: undefined;
+                                    anchors.left: undefined;
+                                    anchors.bottom: undefined
+                                }
+                                ParentChange {
+                                    target: painter;
+                                    parent: playRect
+                                }
+                            },*/
                             State {
                                 name: "mouseHover"
                                 when: mouseArea.containsMouse || mouseArea.drag.active
                                 PropertyChanges {
                                     target: painter
-                                    color: mouseArea.drag.active? "green": (dropArea.containsDrag? "red" : "grey")
+                                    //color: mouseArea.drag.active? "green": (dropArea.containsDrag? "red" : "grey")
                                 }
                             },
                             State {
@@ -94,7 +120,7 @@ Rectangle {
                                 when: dropArea.containsDrag && !isOccupied && stateModel.isMoving && stateModel.isValidMoveEnd(position)
                                 PropertyChanges {
                                     target: painter
-                                    color: "yellow"
+                                    //color: "yellow"
                                     visible: true
                                 }
                             },
@@ -103,7 +129,8 @@ Rectangle {
                                 when: !isOccupied && stateModel.isMoving && stateModel.isValidMoveEnd(position)
                                 PropertyChanges {
                                     target: painter
-                                    color: "blue"
+                                    source: stoneNameToImage("neutral")
+                                    opacity: 0.5
                                     visible: true
                                 }
                             }
