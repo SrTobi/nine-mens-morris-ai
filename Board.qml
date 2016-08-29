@@ -11,7 +11,11 @@ Rectangle {
             return Math.min(parent.width, parent.height);
         }
 
-        id: playRect
+        property bool inMoveState: stateModel.phase === "move";
+        property bool inPutState: stateModel.phase === "put";
+        property bool inRemoveState: stateModel.phase === "remove";
+
+        id: board
         color: "#c18a34"
         border.color: "#000000"
         anchors.centerIn: parent
@@ -46,8 +50,8 @@ Rectangle {
                         id: mouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        enabled: stateModel.isMovablePlayer(stone) && stone === stateModel.currentPlayer
-                        drag.target: painter
+                        enabled: board.inMoveState && stateModel.isMovablePlayer(stone) && stone === stateModel.currentPlayer
+                        drag.target: stoneEntity
                     }
 
                     DropArea {
@@ -72,9 +76,8 @@ Rectangle {
                             return "media/neutral-stone.svg";
                         }
 
-                        id: painter
-                        source: stoneNameToImage(stone)
-                        visible: isOccupied
+                        id: stoneEntity
+                        source: ""
                         anchors.fill: parent
 
                         property bool dragActive: mouseArea.drag.active
@@ -105,31 +108,37 @@ Rectangle {
                                     parent: playRect
                                 }
                             },*/
-                            State {
-                                name: "mouseHover"
+                            /*State {
+                                name: "mouseOver"
                                 when: mouseArea.containsMouse || mouseArea.drag.active
                                 PropertyChanges {
-                                    target: painter
+                                    target: stoneEntity
                                     //color: mouseArea.drag.active? "green": (dropArea.containsDrag? "red" : "grey")
                                 }
-                            },
+                            },*/
                             State {
-                                name: "draggedOver"
-                                when: dropArea.containsDrag && !isOccupied && stateModel.isMoving && stateModel.isValidMoveEnd(position)
+                                name: "draggedOverPossibleMove"
+                                when: board.inMoveState && dropArea.containsDrag && stateModel.isMoving && stateModel.isValidMoveEnd(position)
                                 PropertyChanges {
-                                    target: painter
-                                    //color: "yellow"
-                                    visible: true
+                                    target: stoneEntity
+                                    source: stoneNameToImage("neutral")
                                 }
                             },
                             State {
-                                name: "possibleTarget"
-                                when: !isOccupied && stateModel.isMoving && stateModel.isValidMoveEnd(position)
+                                name: "possibleTargetForMove"
+                                when: board.inMoveState && stateModel.isMoving && stateModel.isValidMoveEnd(position)
                                 PropertyChanges {
-                                    target: painter
+                                    target: stoneEntity
                                     source: stoneNameToImage("neutral")
                                     opacity: 0.5
-                                    visible: true
+                                }
+                            },
+                            State {
+                                name: "placedStone"
+                                when: isOccupied
+                                PropertyChanges {
+                                    target: stoneEntity
+                                    source: stoneNameToImage(stone)
                                 }
                             }
                         ]
