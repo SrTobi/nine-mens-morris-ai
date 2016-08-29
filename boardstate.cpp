@@ -32,10 +32,19 @@ void BoardState::setStoneAt(const QPoint &pos, Stone stone)
 
 int BoardState::whiteStones() const
 {
-    return std::count(mFields.begin(), mFields.end(), Stone::White);
+    return stonesOf(Stone::White);
 }
 
 int BoardState::blackStones() const
+{
+    return stonesOf(Stone::Black);
+}
+
+int BoardState::stonesOf(Stone stone) const
+{
+    return std::count(mFields.begin(), mFields.end(), stone);
+}
+
 {
     return std::count(mFields.begin(), mFields.end(), Stone::Black);
 }

@@ -33,6 +33,7 @@ public:
 
     int whiteStones() const;
     int blackStones() const;
+    int stonesOf(Stone stone) const;
 
     Stone turn() const;
     Phase phase() const;
