@@ -3,7 +3,8 @@
 
 BoardState::BoardState()
     : mTurn(Stone::White)
-    , mPhase(Phase::Move)
+    , mPhase(Phase::Put)
+    , mPutStones(0)
 {
     mFields.fill(Stone::None);
 }
@@ -128,15 +129,17 @@ void BoardState::put(int idx)
     Q_ASSERT(phase() == Phase::Put);
     Q_ASSERT(stoneAt(idx) == Stone::None);
 
+    ++mPutStones;
     setStoneAt(idx, turn());
 
     if(millAt(idx) == turn())
     {
         mPhase = Phase::PutRemove;
-    } else if(whiteStones() + blackStones() == 18)
+    } else
     {
         mTurn = opponent();
-        mPhase = Phase::Move;
+        if(mPutStones == 18)
+            mPhase = Phase::Move;
     }
 }
 
@@ -210,6 +213,35 @@ Stone BoardState::looser() const
 {
     Q_ASSERT(hasEnded());
     return ::opponent(mTurn);
+}
+
+QString BoardState::toString() const
+{
+    auto& board = BoardModel::Inst();
+    QString result;
+
+    for(int y = 0; y < BoardModel::BOARD_HEIGHT; ++y)
+    {
+        for(int x = 0; x < BoardModel::BOARD_WIDTH; ++x)
+        {
+            if(board.isField(QPoint(x, y)))
+                switch (stoneAt(QPoint(x, y))) {
+                case Stone::Black:
+                    result += 'B';
+                    break;
+                case Stone::White:
+                    result += 'W';
+                    break;
+                default:
+                    result += '+';
+                    break;
+                }
+            else
+                result += ' ';
+        }
+        result += '\n';
+    }
+    return result + "Phase: " + to_string(phase()) + "\n";
 }
 
 const QString &to_string(Phase phase)

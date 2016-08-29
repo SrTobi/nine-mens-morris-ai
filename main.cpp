@@ -11,8 +11,8 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     BoardState state;
-    state.setStoneAt(3, Stone::Black);
-    state.setStoneAt(4, Stone::White);
+    //state.setStoneAt(3, Stone::Black);
+    //state.setStoneAt(4, Stone::White);
     StateModel stateModel(state, true, true);
     BoardModel& boardModel = BoardModel::Inst();
     auto* ctx = engine.rootContext();

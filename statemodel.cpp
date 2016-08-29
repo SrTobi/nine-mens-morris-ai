@@ -1,3 +1,4 @@
+#include <qdebug.h>
 #include "statemodel.h"
 #include "boardmodel.h"
 
@@ -28,14 +29,16 @@ QVariant StateModel::data(const QModelIndex &index, int raw_role) const
         return pos;
 
     bool isField = board.isField(pos);
+    if(role == StateRole::IsField)
+        return isField;
+
     if(role == StateRole::IsOccupied)
         return isField && mState.stoneAt(pos) != Stone::None;
-
 
     if(role == StateRole::Stone)
     {
         if(!isField)
-            return "red";
+            return "invalid";
         Stone stone = mState.stoneAt(pos);
         switch(stone)
         {
@@ -44,7 +47,7 @@ QVariant StateModel::data(const QModelIndex &index, int raw_role) const
         case Stone::White:
             return "white";
         default:
-            return "red";
+            return "none";
             break;
         }
     }
@@ -57,6 +60,7 @@ QHash<int, QByteArray> StateModel::roleNames() const
     QHash<int, QByteArray> roles;
     roles[(int)StateRole::Position] = "position";
     roles[(int)StateRole::IsOccupied] = "isOccupied";
+    roles[(int)StateRole::IsField] = "isField";
     roles[(int)StateRole::Stone] = "stone";
     return roles;
 }
@@ -130,11 +134,12 @@ void StateModel::endMove(const QPoint &to)
     }
 
     const auto beforeTurn = mState.turn();
+    const auto beforePhase = mState.phase();
     Move move(from, to);
 
 
-    int from_row =  from.x() + from.y() * BoardModel::BOARD_WIDTH;
-    int to_row =    to.x() + to.y() * BoardModel::BOARD_WIDTH;
+    int from_row = positionToRow(from);
+    int to_row = positionToRow(to);
 
     bool isAdjacent = std::abs(from_row - to_row) == 1;
 
@@ -151,12 +156,21 @@ void StateModel::endMove(const QPoint &to)
 
     beginMoveRows(root, from_row, from_row, root, to_row + ((from_row + 1 == to_row)? 1 : 0));
     mState.move(move);
+    qDebug() << "After move";
+    qDebug() << mState.toString().toStdString().c_str();
     endMoveRows();
 
     if(!isAdjacent)
     {
         beginInsertRows(root, from_row, from_row);
         endInsertRows();
+    }
+
+    emit dataChanged(index(0), index(BoardModel::BOARD_HEIGHT * BoardModel::BOARD_WIDTH));
+
+    if(beforePhase != mState.phase())
+    {
+        emit phaseChanged();
     }
 
     if(beforeTurn != mState.turn())
@@ -168,8 +182,19 @@ void StateModel::endMove(const QPoint &to)
 void StateModel::put(const QPoint &to)
 {
     const auto beforeTurn = mState.turn();
+    const auto beforePhase = mState.phase();
 
     mState.put(to);
+    qDebug() << "After put";
+    qDebug() << mState.toString().toStdString().c_str();
+
+    QModelIndex index = this->index(positionToRow(to), 0);
+    emit dataChanged(index, index);
+
+    if(beforePhase != mState.phase())
+    {
+        emit phaseChanged();
+    }
 
     if(beforeTurn != mState.turn())
     {
@@ -183,11 +208,22 @@ void StateModel::remove(const QPoint &to)
 
     Move move(to);
     mState.move(move);
+    qDebug() << "After remove";
+    qDebug() << mState.toString().toStdString().c_str();
 
+    QModelIndex index = this->index(positionToRow(to), 0);
+    emit dataChanged(index, index);
+
+    emit phaseChanged();
     if(beforeTurn != mState.turn())
     {
         emit currentPlayerChanged();
     }
+}
+
+int StateModel::positionToRow(const QPoint &pos) const
+{
+    return pos.x() + pos.y() * BoardModel::BOARD_WIDTH;
 }
 
 /*

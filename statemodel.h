@@ -14,6 +14,7 @@ public:
     enum class StateRole {
         Position = Qt::UserRole + 1,
         IsOccupied,
+        IsField,
         Stone
     };
 
@@ -54,6 +55,8 @@ signals:
     void isMovingChanged();
     void phaseChanged();
 
+private:
+    int positionToRow(const QPoint& pos) const;
 private:
     QScopedPointer<QPoint> mMoveStart;
     BoardState mState;

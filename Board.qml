@@ -39,6 +39,7 @@ Rectangle {
             }
 
             Repeater {
+                id: rep
                 model: stateModel
 
                 delegate: Item {
@@ -47,11 +48,20 @@ Rectangle {
                     height: parent.height / parent.rows
 
                     MouseArea {
+                        property bool canBeDragged: isOccupied && stateModel.isMovablePlayer(stone) && stone === stateModel.currentPlayer
                         id: mouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        enabled: board.inMoveState && stateModel.isMovablePlayer(stone) && stone === stateModel.currentPlayer
+                        drag.threshold: canBeDragged? 1 : 1000000
+                        enabled: isField
                         drag.target: stoneEntity
+
+                        onClicked: {
+                            if(board.inPutState && !isOccupied)
+                                stateModel.put(position);
+                            else if(board.inRemoveState && isOccupied)
+                                stateModel.remove(position);
+                        }
                     }
 
                     DropArea {
@@ -78,17 +88,25 @@ Rectangle {
 
                         id: stoneEntity
                         source: ""
+                        visible: isField
                         anchors.fill: parent
 
-                        property bool dragActive: mouseArea.drag.active
+
+                        //property bool dragActive:
+
                         Drag.mimeData: { "ninemensmorris/stone": stone}
-                        Drag.active: dragActive
+                        Drag.active: mouseArea.drag.active
                         Drag.hotSpot.y: 0
                         Drag.hotSpot.x: 0
                         Drag.dragType: Drag.Automatic
 
                         Drag.onDragStarted: {
-                            stateModel.startMove(position);
+                            console.debug("drag started")
+                            if(!board.inMoveState) {
+                                console.debug("cancel!");
+                                Drag.cancel();
+                            }else
+                                stateModel.startMove(position);
                         }
 
                         states: [
@@ -116,6 +134,15 @@ Rectangle {
                                     //color: mouseArea.drag.active? "green": (dropArea.containsDrag? "red" : "grey")
                                 }
                             },*/
+                            State {
+                                name: "hoverPossiblePut"
+                                when: board.inPutState && !isOccupied && mouseArea.containsMouse
+                                PropertyChanges {
+                                    target: stoneEntity
+                                    source: stoneNameToImage("neutral")
+                                }
+                            },
+
                             State {
                                 name: "draggedOverPossibleMove"
                                 when: board.inMoveState && dropArea.containsDrag && stateModel.isMoving && stateModel.isValidMoveEnd(position)

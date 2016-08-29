@@ -29,8 +29,6 @@ public:
     Stone stoneAt(int idx) const;
     Stone stoneAt(const QPoint& pos) const;
 
-    void setStoneAt(int idx, Stone stone);
-    void setStoneAt(const QPoint& pos, Stone stone);
 
     int whiteStones() const;
     int blackStones() const;
@@ -52,10 +50,17 @@ public:
     bool hasEnded() const;
     Stone winner() const;
     Stone looser() const;
+
+    QString toString() const;
+private:
+    void setStoneAt(int idx, Stone stone);
+    void setStoneAt(const QPoint& pos, Stone stone);
+
 private:
     std::array<Stone, BoardModel::BOARD_FIELDS_NUM> mFields;
     Stone mTurn;
     Phase mPhase;
+    uint16_t mPutStones;
 };
 
 #endif // BOARDSTATE_H
