@@ -165,7 +165,7 @@ Stone BoardState::millAt(const QPoint& pos)
         for(const QPoint& neighbour : board.adjacentFields(pos))
         {
             if(stoneAt(neighbour) != stone)
-                return Stone::None;
+                continue;
 
             auto diff = neighbour - pos;
 
