@@ -30,7 +30,9 @@ public:
     const QVector<QPoint>& fields() const;
 
     const QVector<QPoint>& directions() const;
+    Q_INVOKABLE bool isOnBoard(int idx) const;
     Q_INVOKABLE bool isOnBoard(const QPoint& pos) const;
+    Q_INVOKABLE bool isField(int idx) const;
     Q_INVOKABLE bool isField(const QPoint& pos) const;
     Q_INVOKABLE bool areAdjacentFields(const QPoint& p1, const QPoint& p2) const;
     Q_INVOKABLE bool areAdjacentFields(int i1, int i2) const;

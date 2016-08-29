@@ -39,12 +39,22 @@ const QVector<QPoint> &BoardModel::directions() const
     return mDirections;
 }
 
+bool BoardModel::isOnBoard(int idx) const
+{
+    return 0 <= idx && idx < BOARD_FIELDS_NUM;
+}
+
 bool BoardModel::isOnBoard(const QPoint &pos) const
 {
     int x = pos.x();
     int y = pos.y();
     return 0 <= x && x < BOARD_WIDTH
-        && 0 <= y && y < BOARD_HEIGHT;
+            && 0 <= y && y < BOARD_HEIGHT;
+}
+
+bool BoardModel::isField(int idx) const
+{
+    return isOnBoard(idx);
 }
 
 bool BoardModel::isField(const QPoint &pos) const
