@@ -12,6 +12,9 @@ public:
     static const int BOARD_FIELDS_NUM = 24;
     static const int BOARD_WIDTH = 7;
     static const int BOARD_HEIGHT = 7;
+    static const int BOARD_DIM = BOARD_WIDTH * BOARD_HEIGHT;
+    static const int NUM_STONES_ALLOW_FLY = 3;
+    static const int NUM_STONES_TO_PUT = 9;
     static constexpr QPoint NORTH = QPoint(0, -1);
     static constexpr QPoint EAST =  QPoint(1, 0);
     static constexpr QPoint SOUTH = QPoint(0, 1);

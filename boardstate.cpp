@@ -70,7 +70,7 @@ bool BoardState::isValidMove(const Move& move) const
         if(stoneAt(move.toIdx()) != Stone::None)
             return false;
 
-        if(stonesOf(turn()) > 3 && !board.areAdjacentFields(move.fromIdx(), move.toIdx()))
+        if(stonesOf(turn()) > BoardModel::NUM_STONES_ALLOW_FLY && !board.areAdjacentFields(move.fromIdx(), move.toIdx()))
             return false;
 
         if(move.isRemoving())
@@ -104,7 +104,7 @@ void BoardState::move(const Move& move)
             mPhase = Phase::Remove;
 
             // check for winner
-            if(stonesOf(opponent()) == 3)
+            if(stonesOf(opponent()) == BoardModel::NUM_STONES_ALLOW_FLY)
             {
                 mPhase = Phase::End;
                 return;
@@ -143,7 +143,7 @@ void BoardState::put(int idx)
     } else
     {
         mTurn = opponent();
-        if(mPutStones == 18)
+        if(mPutStones >= BoardModel::NUM_STONES_TO_PUT)
             mPhase = Phase::Move;
     }
 }
