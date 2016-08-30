@@ -149,13 +149,13 @@ void BoardState::put(const QPoint &pos)
     put(model.positionToIndex(pos));
 }
 
-Stone BoardState::millAt(int idx)
+Stone BoardState::millAt(int idx) const
 {
     auto& model = BoardModel::Inst();
     return millAt(model.indexToPosition(idx));
 }
 
-Stone BoardState::millAt(const QPoint& pos)
+Stone BoardState::millAt(const QPoint& pos) const
 {
     auto& board = BoardModel::Inst();
 

@@ -7,11 +7,61 @@ StateModel::StateModel(const BoardState& state, bool whitePlayerMovable, bool bl
     , mBlackMovable(blackPlayerMovable)
     , mWhiteMovable(whitePlayerMovable)
 {
+    for(int i = 0; i < BoardModel::BOARD_WIDTH * BoardModel::BOARD_HEIGHT; ++i)
+        mRowTable.push_back(i);
 }
 
-int StateModel::rowCount(const QModelIndex& /*parent*/) const
+QModelIndex StateModel::index(int row, int column, const QModelIndex &parent) const
 {
-    return BoardModel::BOARD_HEIGHT * BoardModel::BOARD_WIDTH;
+    if(!hasIndex(row, column, parent))
+        return QModelIndex();
+
+    const int* rowPtr = nullptr;
+
+    // if internal ptr = null then the index points to a field
+    // if internal ptr = int* then the index points to a stone on a field
+    if(parent.isValid())
+    {
+        Q_ASSERT(parent.internalPointer() == nullptr);
+        rowPtr = &mRowTable.at(parent.row());
+    }
+
+    return createIndex(row, column, const_cast<int*>(rowPtr));
+}
+
+QModelIndex StateModel::parent(const QModelIndex &child) const
+{
+    if(child.isValid())
+    {
+        int* rowptr = static_cast<int*>(child.internalPointer());
+
+        if(rowptr)
+            return createIndex(*rowptr, 0);
+    }
+
+    return QModelIndex();
+}
+
+int StateModel::rowCount(const QModelIndex& parent) const
+{
+    if(!parent.isValid())
+        return BoardModel::BOARD_HEIGHT * BoardModel::BOARD_WIDTH;
+
+    int* rowptr = static_cast<int*>(parent.internalPointer());
+
+    const auto& board = BoardModel::Inst();
+    if(rowptr)
+        return 0;
+    else {
+        const auto pos = rowToPosition(parent.row());
+        return board.isField(pos) && mState.stoneAt(pos) != Stone::None? 1 : 0;
+    }
+}
+
+int StateModel::columnCount(const QModelIndex& parent) const
+{
+    Q_UNUSED(parent);
+    return 1;
 }
 
 
@@ -21,35 +71,29 @@ QVariant StateModel::data(const QModelIndex &index, int raw_role) const
         return QVariant();
 
     const auto& board = BoardModel::Inst();
-    const auto pos = QPoint(index.row() % BoardModel::BOARD_WIDTH, index.row() / BoardModel::BOARD_WIDTH);
-
     const auto role = StateRole(raw_role);
+    const int* rowptr = static_cast<int*>(index.internalPointer());
 
-    if(role == StateRole::Position)
-        return pos;
-
-    bool isField = board.isField(pos);
-    if(role == StateRole::IsField)
-        return isField;
-
-    if(role == StateRole::IsOccupied)
-        return isField && mState.stoneAt(pos) != Stone::None;
-
-    if(role == StateRole::Stone)
+    if(rowptr)
     {
-        if(!isField)
-            return "invalid";
-        Stone stone = mState.stoneAt(pos);
-        switch(stone)
+        const auto pos = rowToPosition(*rowptr);
+
+        if(role == StateRole::Stone)
         {
-        case Stone::Black:
-            return "black";
-        case Stone::White:
-            return "white";
-        default:
-            return "none";
-            break;
+            return to_string(mState.stoneAt(pos));
         }
+    }else{
+        const auto pos = rowToPosition(index.row());
+
+        if(role == StateRole::Position)
+            return pos;
+
+        bool isField = board.isField(pos);
+        if(role == StateRole::IsField)
+            return isField;
+
+        if(role == StateRole::IsOccupied)
+            return isField && mState.stoneAt(pos) != Stone::None;
     }
 
     return QVariant();
@@ -76,6 +120,12 @@ bool StateModel::isValidMove(const QPoint &from, const QPoint &to) const
 bool StateModel::isValidMoveEnd(const QPoint &to) const
 {
     return isValidMove(getMoveStartPosition(), to);
+}
+
+bool StateModel::canRemove(const QPoint &pos) const
+{
+    return mState.opponent() == mState.stoneAt(pos)
+            && mState.millAt(pos) == Stone::None;
 }
 
 QPoint StateModel::getMoveStartPosition() const
@@ -138,35 +188,17 @@ void StateModel::endMove(const QPoint &to)
     Move move(from, to);
 
 
-    int from_row = positionToRow(from);
-    int to_row = positionToRow(to);
+    QModelIndex fromIndex = index(positionToRow(from), 0);
+    QModelIndex toIndex = index(positionToRow(to), 0);
 
-    bool isAdjacent = std::abs(from_row - to_row) == 1;
-
-    QModelIndex root;
-    if(!isAdjacent)
-    {
-        beginRemoveRows(root, to_row, to_row);
-        endRemoveRows();
-        if(to_row < from_row)
-        {
-            --from_row;
-        }
-    }
-
-    beginMoveRows(root, from_row, from_row, root, to_row + ((from_row + 1 == to_row)? 1 : 0));
+    beginMoveRows(fromIndex, 0, 0, toIndex, 0);
     mState.move(move);
     qDebug() << "After move";
     qDebug() << mState.toString().toStdString().c_str();
     endMoveRows();
 
-    if(!isAdjacent)
-    {
-        beginInsertRows(root, from_row, from_row);
-        endInsertRows();
-    }
-
-    emit dataChanged(index(0), index(BoardModel::BOARD_HEIGHT * BoardModel::BOARD_WIDTH));
+    emit dataChanged(fromIndex, fromIndex);
+    emit dataChanged(toIndex, toIndex);
 
     if(beforePhase != mState.phase())
     {
@@ -184,12 +216,11 @@ void StateModel::put(const QPoint &to)
     const auto beforeTurn = mState.turn();
     const auto beforePhase = mState.phase();
 
+    QModelIndex fieldIndex = index(positionToRow(to), 0);
+    beginInsertRows(fieldIndex, 0, 0);
     mState.put(to);
-    qDebug() << "After put";
-    qDebug() << mState.toString().toStdString().c_str();
-
-    QModelIndex index = this->index(positionToRow(to), 0);
-    emit dataChanged(index, index);
+    endInsertRows();
+    emit dataChanged(fieldIndex, fieldIndex, {(int)StateRole::IsOccupied});
 
     if(beforePhase != mState.phase())
     {
@@ -200,30 +231,39 @@ void StateModel::put(const QPoint &to)
     {
         emit currentPlayerChanged();
     }
+    qDebug() << "After put";
+    qDebug() << mState.toString().toStdString().c_str();
 }
 
 void StateModel::remove(const QPoint &to)
 {
     const auto beforeTurn = mState.turn();
 
-    Move move(to);
-    mState.move(move);
-    qDebug() << "After remove";
-    qDebug() << mState.toString().toStdString().c_str();
-
-    QModelIndex index = this->index(positionToRow(to), 0);
-    emit dataChanged(index, index);
-
+    QModelIndex fieldIndex = index(positionToRow(to), 0);
+    beginRemoveRows(fieldIndex, 0, 0);
+    Move remove(to);
+    mState.move(remove);
+    endRemoveRows();
+    emit dataChanged(fieldIndex, fieldIndex, {(int)StateRole::IsOccupied});
     emit phaseChanged();
+
     if(beforeTurn != mState.turn())
     {
         emit currentPlayerChanged();
     }
+
+    qDebug() << "After remove";
+    qDebug() << mState.toString().toStdString().c_str();
 }
 
 int StateModel::positionToRow(const QPoint &pos) const
 {
     return pos.x() + pos.y() * BoardModel::BOARD_WIDTH;
+}
+
+QPoint StateModel::rowToPosition(int row) const
+{
+    return QPoint(row % BoardModel::BOARD_WIDTH, row / BoardModel::BOARD_HEIGHT);
 }
 
 /*

@@ -40,8 +40,8 @@ public:
     void put(int idx);
     void put(const QPoint& pos);
 
-    Stone millAt(int idx);
-    Stone millAt(const QPoint& pos);
+    Stone millAt(int idx) const;
+    Stone millAt(const QPoint& pos) const;
 
     Stone turn() const;
     Stone opponent() const;
