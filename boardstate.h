@@ -34,7 +34,7 @@ public:
     int blackStones() const;
     int stonesOf(Stone stone) const;
 
-    bool isValidMove(const Move& move);
+    bool isValidMove(const Move& move) const;
     void move(const Move& move);
 
     void put(int idx);

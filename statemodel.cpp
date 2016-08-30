@@ -112,9 +112,11 @@ QHash<int, QByteArray> StateModel::roleNames() const
 bool StateModel::isValidMove(const QPoint &from, const QPoint &to) const
 {
     const auto& board = BoardModel::Inst();
-    return board.isField(to)
-            && board.areAdjacentFields(from, to)
-            && mState.stoneAt(to) == Stone::None;
+    if(!board.isField(to))
+        return false;
+
+    Move move(from, to);
+    return mState.isValidMove(move);
 }
 
 bool StateModel::isValidMoveEnd(const QPoint &to) const
@@ -124,8 +126,12 @@ bool StateModel::isValidMoveEnd(const QPoint &to) const
 
 bool StateModel::canRemove(const QPoint &pos) const
 {
-    return mState.opponent() == mState.stoneAt(pos)
-            && mState.millAt(pos) == Stone::None;
+    const auto& board = BoardModel::Inst();
+    if(!board.isField(pos))
+        return false;
+
+    Move remove(pos);
+    return mState.isValidMove(remove);
 }
 
 QPoint StateModel::getMoveStartPosition() const

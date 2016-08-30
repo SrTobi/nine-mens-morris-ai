@@ -46,8 +46,10 @@ int BoardState::stonesOf(Stone stone) const
     return std::count(mFields.begin(), mFields.end(), stone);
 }
 
-bool BoardState::isValidMove(const Move& move)
+bool BoardState::isValidMove(const Move& move) const
 {
+    const auto& board = BoardModel::Inst();
+
     if(move.isRemoving())
     {
         if(stoneAt(move.removeIdx()) != opponent())
@@ -66,6 +68,9 @@ bool BoardState::isValidMove(const Move& move)
             return false;
 
         if(stoneAt(move.toIdx()) != Stone::None)
+            return false;
+
+        if(stonesOf(turn()) > 3 && !board.areAdjacentFields(move.fromIdx(), move.toIdx()))
             return false;
 
         if(move.isRemoving())
