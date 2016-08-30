@@ -68,7 +68,7 @@ Rectangle {
                     onClicked: {
                         if(board.inPutState && !isOccupied)
                             stateModel.put(position);
-                        else if(board.inRemoveState && isOccupied)
+                        else if(board.inRemoveState && stateModel.canRemove(position))
                             stateModel.remove(position);
                     }
                 }
@@ -126,7 +126,6 @@ Rectangle {
                                 hoverEnabled: true
                                 enabled: canBeDragged
                                 drag.target: stoneEntity
-                                z: -88
                             }
 
                             Image {
