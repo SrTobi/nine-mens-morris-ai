@@ -109,6 +109,20 @@ void BoardState::move(const Move& move)
                 mPhase = Phase::End;
                 return;
             }
+
+            const auto& board = BoardModel::Inst();
+            // check if a stone stoneof the opponent can be removed!
+            auto& fields = board.fields();
+            int numRemovableStones = std::count_if(fields.begin(), fields.end(),
+                                                   [this](const QPoint& pos)
+                                                    {
+                                                        return stoneAt(pos) == opponent() && millAt(pos) == Stone::None;
+                                                    });
+            if(numRemovableStones <= 0)
+            {
+                mPhase = Phase::Move;
+                nextTurn = true;
+            }
         }else{
             nextTurn = true;
         }
@@ -143,7 +157,7 @@ void BoardState::put(int idx)
     } else
     {
         mTurn = opponent();
-        if(mPutStones >= BoardModel::NUM_STONES_TO_PUT)
+        if(mPutStones >= BoardModel::NUM_STONES_TO_PUT * 2)
             mPhase = Phase::Move;
     }
 }
