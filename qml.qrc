@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Board.qml</file>
-        <file>TestModel.qml</file>
         <file>media/black-stone.svg</file>
         <file>media/simple-field.svg</file>
         <file>media/white-stone.svg</file>

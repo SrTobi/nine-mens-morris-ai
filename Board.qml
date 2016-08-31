@@ -1,6 +1,10 @@
 import QtQuick 2.5
 import QtQml.Models 2.2
 
+/*
+ * The Board where the game is played on.
+ * boardRect is surrounding the actual board to ensure correct aspect ratio
+ */
 Rectangle {
     id: boardRect
     color: "#c18a34"
@@ -36,6 +40,7 @@ Rectangle {
         property bool inPutState: stateModel.phase === "put";
         property bool inRemoveState: stateModel.phase === "remove";
         property bool inEndState: boardRect.inEndState
+        property bool movablePlayerActive: stateModel.isMovablePlayer(stateModel.currentPlayer)
 
 
         id: board
@@ -76,9 +81,9 @@ Rectangle {
                     enabled: isField && board.playable;
 
                     onClicked: {
-                        if(board.inPutState && !isOccupied)
+                        if(board.inPutState && !isOccupied && board.movablePlayerActive)
                             stateModel.put(position);
-                        else if(board.inRemoveState && stateModel.canRemove(position))
+                        else if(board.inRemoveState && stateModel.canRemove(position) && board.movablePlayerActive)
                             stateModel.remove(position);
                     }
                 }
@@ -100,13 +105,7 @@ Rectangle {
                     interactive: false
 
                     add: Transition {
-                        //enabled: board.movedStoneOriginField == null
-                        //id: addTrans
                         NumberAnimation { properties: "opacity"; duration: 700; from: 0; to: 1; easing.type: Easing.OutCubic }
-                        /*enabled: board.movedStoneOriginField != null
-                        property var origin: board.movedStoneOriginField == null? Qt.point(0, 0) : stoneView.mapFromItem(board.movedStoneOriginField, 0, 0)
-                        NumberAnimation { properties: "y"; duration: 2000; from: addTrans.origin.y; easing.type: Easing.InCubic }
-                        NumberAnimation { properties: "x"; duration: 2000; from: addTrans.origin.x; easing.type: Easing.InCubic }*/
                         onRunningChanged: {
                             console.debug("add running[" + board.movedStoneOriginField + "]: " + running)
                             if(!running)
@@ -116,9 +115,7 @@ Rectangle {
                     }
                     remove: Transition {
                         NumberAnimation { properties: "opacity"; duration: 700; from: 1; to: 0; easing.type: Easing.OutCubic }
-                        //enabled: board.movedStoneOriginField == null
                         onRunningChanged: {
-                            console.debug("remove running[" + board.movedStoneOriginField + "]: " + running)
                             if(!running)
                                 board.movedStoneOriginField = null
                         }
@@ -148,7 +145,6 @@ Rectangle {
                             Image {
                                 width: field.width
                                 height: field.height
-                                //anchors.centerIn: parent
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 id: stoneEntity
@@ -156,8 +152,6 @@ Rectangle {
 
                                 Drag.keys: ["ninemensmorris/stone"]
                                 property bool dragActive: stoneMouseArea.drag.active
-                                //Drag.active: stoneMouseArea.drag.active
-                                //Drag.source: stoneView
                                 Drag.hotSpot.y: height / 2
                                 Drag.hotSpot.x: width / 2
                                 Drag.dragType: Drag.Automatic
@@ -174,17 +168,6 @@ Rectangle {
                                         stateModel.abortMove();
                                     }
                                 }
-
-                                Drag.onDragStarted: {
-                                    /*board.movedStoneOriginField = field
-                                    //console.debug("item from " + board.movedStoneOrigin)
-                                    if(!board.inMoveState) {
-                                        console.debug("cancel!");
-                                        Drag.cancel();
-                                    }else
-                                        stateModel.startMove(field.pos);*/
-                                }
-                                //Drop.onDrag
 
                                 states: [
                                     State {
@@ -230,30 +213,6 @@ Rectangle {
                     anchors.fill: parent
 
                     states: [
-
-                        /*State {
-                            name: "isDragged"
-                            when: painter.dragActive
-                            AnchorChanges {
-                                target: painter;
-                                anchors.right: undefined;
-                                anchors.top: undefined;
-                                anchors.left: undefined;
-                                anchors.bottom: undefined
-                            }
-                            ParentChange {
-                                target: painter;
-                                parent: playRect
-                            }
-                        },*/
-                        /*State {
-                            name: "mouseOver"
-                            when: mouseArea.containsMouse || mouseArea.drag.active
-                            PropertyChanges {
-                                target: stoneEntity
-                                //color: mouseArea.drag.active? "green": (dropArea.containsDrag? "red" : "grey")
-                            }
-                        },*/
                         State {
                             name: "hoverPossiblePut"
                             when: board.inPutState && stateModel.isMovablePlayer(stateModel.currentPlayer) && !isOccupied && fieldMouseArea.containsMouse
@@ -282,16 +241,6 @@ Rectangle {
                                 opacity: 0.4
                             }
                         }
-
-                        /*,
-                        State {
-                            name: "placedStone"
-                            when: isOccupied
-                            PropertyChanges {
-                                target: stoneEntity
-                                source: stoneNameToImage(stone)
-                            }
-                        }*/
                     ]
                 }
             }
