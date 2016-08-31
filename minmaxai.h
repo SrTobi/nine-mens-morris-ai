@@ -14,8 +14,8 @@ public:
     Put nextPut(const BoardState &state) override;
 
 private:
-    double miniMax(int deep, const BoardState& state, Stone turn, double alpha, double beta, const std::function<void(const BoardState&, const std::function<bool(const BoardState&)>&)>& callback) const;
-
+    double miniMax(int deep, const BoardState& state, Stone turn, double alpha, double beta) const;
+    void generateNexStates(const BoardState&, const std::function<bool(const BoardState&)>& callback) const;
     double rateState(const BoardState& state) const;
 };
 

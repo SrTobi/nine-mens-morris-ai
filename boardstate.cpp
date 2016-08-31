@@ -256,7 +256,7 @@ int BoardState::possibleAdjacentMoves(Stone stone) const
 {
     int result = 0;
     const auto& board = BoardModel::Inst();
-    Q_ASSERT(mPhase == Phase::Move);
+    //Q_ASSERT(mPhase == Phase::Move);
     for(int from = 0; from < BoardModel::BOARD_FIELDS_NUM; ++from)
     {
         if(stoneAt(from) == stone)
@@ -264,8 +264,7 @@ int BoardState::possibleAdjacentMoves(Stone stone) const
             const auto& possibleFields = board.adjacentFields(from);
             for(int to : possibleFields)
             {
-                Move move(from, to);
-                if(isValidMove(move))
+                if(stoneAt(to) == Stone::None)
                 {
                     ++result;
                 }

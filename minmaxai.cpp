@@ -4,16 +4,6 @@
 
 Move MinMaxAi::nextMove(const BoardState &state)
 {
-    auto genNextStates = [](const BoardState& state, const std::function<bool (const BoardState &)>& callback)
-    {
-        state.generateMoves([&state, &callback](const Move& move)
-        {
-            auto clone = state;
-            clone.move(move);
-            return callback(clone);
-        });
-    };
-
     double worstRate = std::numeric_limits<double>::infinity();
     Move result;
     state.generateMoves([&](const Move& move)
@@ -21,7 +11,7 @@ Move MinMaxAi::nextMove(const BoardState &state)
         auto clone = state;
         clone.move(move);
 
-        double rate = miniMax(3, clone, state.opponent(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), genNextStates);
+        double rate = miniMax(3, clone, state.opponent(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
         if(rate < worstRate)
         {
             worstRate = rate;
@@ -36,16 +26,6 @@ Move MinMaxAi::nextMove(const BoardState &state)
 
 Put MinMaxAi::nextPut(const BoardState &state)
 {
-    auto genNextStates = [](const BoardState& state, const std::function<bool (const BoardState &)>& callback)
-    {
-        state.generatePuts([&state, &callback](const Put& put)
-        {
-            auto clone = state;
-            clone.put(put);
-            return callback(clone);
-        });
-    };
-
     double worstRate = std::numeric_limits<double>::infinity();
     Put result;
     state.generatePuts([&](const Put& put)
@@ -53,7 +33,7 @@ Put MinMaxAi::nextPut(const BoardState &state)
         auto clone = state;
         clone.put(put);
 
-        double rate = miniMax(2, clone, state.opponent(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), genNextStates);
+        double rate = miniMax(2, clone, state.opponent(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
         if(rate < worstRate)
         {
             worstRate = rate;
@@ -66,7 +46,29 @@ Put MinMaxAi::nextPut(const BoardState &state)
     return result;
 }
 
-double MinMaxAi::miniMax(int deep, const BoardState &state, Stone turn, double alpha, double beta, const std::function<void(const BoardState&, const std::function<bool(const BoardState&)>&)>& callback) const
+void MinMaxAi::generateNexStates(const BoardState& state, const std::function<bool (const BoardState &)>& callback) const
+{
+    Q_ASSERT(state.phase() == Phase::Move || state.phase() == Phase::Put);
+
+    if(state.phase() == Phase::Move)
+    {
+        state.generateMoves([&state, &callback](const Move& move)
+        {
+            auto clone = state;
+            clone.move(move);
+            return callback(clone);
+        });
+    }else{
+        state.generatePuts([&state, &callback](const Put& put)
+        {
+            auto clone = state;
+            clone.put(put);
+            return callback(clone);
+        });
+    }
+}
+
+double MinMaxAi::miniMax(int deep, const BoardState &state, Stone turn, double alpha, double beta) const
 {
     const double winRate = 1000000.0;
     if(state.phase() == Phase::End)
@@ -76,9 +78,9 @@ double MinMaxAi::miniMax(int deep, const BoardState &state, Stone turn, double a
 
     double maxValue = alpha;
 
-    callback(state, [&](const BoardState& newState)
+    generateNexStates(state, [&](const BoardState& newState)
     {
-        double newStateValue = -miniMax(deep + 1, newState, opponent(turn), -beta, -maxValue, callback);
+        double newStateValue = -miniMax(deep - 1, newState, opponent(turn), -beta, -maxValue);
         maxValue = std::max(newStateValue, maxValue);
         return maxValue < beta;
     });
@@ -93,9 +95,9 @@ double MinMaxAi::rateState(const BoardState &state) const
     auto turn = state.turn();
     auto opp = state.opponent();
 
-    result += 5.0 * (state.stonesOf(turn) - state.stonesOf(opp));
+    result += 10.0 * (state.stonesOf(turn) - state.stonesOf(opp));
     result += 1.0 * (state.possibleAdjacentMoves(turn) - state.possibleAdjacentMoves(opp));
-    result += 10.0 * (state.numberOfMills(turn) - state.numberOfMills(opp));
+    result += 40.0 * (state.numberOfMills(turn) - state.numberOfMills(opp));
 
     return result;
 }
