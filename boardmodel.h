@@ -32,6 +32,7 @@ public:
 
     const QVector<int>& fieldIndices() const;
     const QVector<QPoint>& fields() const;
+    const QVector<std::array<int, 3>> possibleMills() const;
 
     const QVector<QPoint>& directions() const;
     Q_INVOKABLE bool isOnBoard(int idx) const;
@@ -53,6 +54,8 @@ private:
     QVector<QVector<bool>> mAdjacentMatrix;
     QVector<QVector<int>> mAdjacentIndexLists;
     QVector<QVector<QPoint>> mAdjacentPositionLists;
+
+    QVector<std::array<int, 3>> mPossibleMills;
 };
 
 #endif // BOARDMODEL_H

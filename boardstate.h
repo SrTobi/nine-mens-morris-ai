@@ -45,6 +45,8 @@ public:
 
     bool hasRemovableStones(Stone stone) const;
     bool canMove(Stone stone) const;
+    int possibleAdjacentMoves(Stone stone) const;
+    int numberOfMills(Stone stone) const;
     Stone millAt(int idx) const;
     Stone millAt(const QPoint& pos) const;
 

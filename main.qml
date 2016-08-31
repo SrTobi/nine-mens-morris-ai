@@ -72,7 +72,7 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
 
             onClicked: {
-                menu.startGame("none", "random")
+                menu.startGame("none", "minmax")
             }
         }
 

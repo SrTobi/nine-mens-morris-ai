@@ -167,6 +167,9 @@ bool BoardState::isValidPut(const Put &put) const
 
         if(millAt(put.removeIdx()) == opponent())
             return false;
+
+        if(!hasRemovableStones(opponent()))
+            return false;
     }
 
     return true;
@@ -202,6 +205,12 @@ void BoardState::put(const Put &put)
             mPhase = Phase::Move;
             checkForLose();
         }
+    }
+
+    if(put.isRemoving())
+    {
+        Move remove(put.removeIdx());
+        move(remove);
     }
 }
 
@@ -243,10 +252,53 @@ bool BoardState::canMove(Stone stone) const
     return false;
 }
 
+int BoardState::possibleAdjacentMoves(Stone stone) const
+{
+    int result = 0;
+    const auto& board = BoardModel::Inst();
+    Q_ASSERT(mPhase == Phase::Move);
+    for(int from = 0; from < BoardModel::BOARD_FIELDS_NUM; ++from)
+    {
+        if(stoneAt(from) == stone)
+        {
+            const auto& possibleFields = board.adjacentFields(from);
+            for(int to : possibleFields)
+            {
+                Move move(from, to);
+                if(isValidMove(move))
+                {
+                    ++result;
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+int BoardState::numberOfMills(Stone stone) const
+{
+    int result = 0;
+    const auto& board = BoardModel::Inst();
+    for(const auto& millIndices: board.possibleMills())
+    {
+        bool isMill = true;
+        for(int idx: millIndices)
+        {
+            if(stoneAt(idx) != stone)
+                isMill = false;
+        }
+        if(isMill)
+            ++result;
+
+    }
+    return result;
+}
+
 Stone BoardState::millAt(int idx) const
 {
-    auto& model = BoardModel::Inst();
-    return millAt(model.indexToPosition(idx));
+    const auto& board = BoardModel::Inst();
+    return millAt(board.indexToPosition(idx));
 }
 
 Stone BoardState::millAt(const QPoint& pos) const

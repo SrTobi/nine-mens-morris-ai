@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     move.cpp \
     stone.cpp \
     aiworker.cpp \
-    randomai.cpp
+    randomai.cpp \
+    minmaxai.cpp
 
 RESOURCES += qml.qrc
 
@@ -28,4 +29,5 @@ HEADERS += \
     stone.h \
     ai.h \
     aiworker.h \
-    randomai.h
+    randomai.h \
+    minmaxai.h

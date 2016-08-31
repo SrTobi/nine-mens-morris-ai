@@ -4,6 +4,7 @@
 #include "statemodel.h"
 #include "aiworker.h"
 #include "randomai.h"
+#include "minmaxai.h"
 #include "boardmodel.h"
 
 
@@ -145,6 +146,8 @@ void StateModel::initGame(const QString &whiteAi, const QString &blackAi)
     {
         if(aiName == "random")
             return std::make_shared<RandomAi>();
+        else if(aiName == "minmax")
+            return std::make_shared<MinMaxAi>();
         return nullptr;
     };
 

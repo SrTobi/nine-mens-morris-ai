@@ -39,6 +39,11 @@ const QVector<QPoint> &BoardModel::fields() const
     return mIndexToPositionMapping;
 }
 
+const QVector<std::array<int, 3> > BoardModel::possibleMills() const
+{
+    return mPossibleMills;
+}
+
 const QVector<QPoint> &BoardModel::directions() const
 {
     return mDirections;
@@ -157,6 +162,27 @@ BoardModel::BoardModel()
                     make_adjacent(from, to);
 
                 break;
+            }
+        }
+    }
+
+    QPoint southAndEast[] = {
+        SOUTH, EAST
+    };
+    std::array<int, 3> millIndices;
+
+    // search for possible mills
+    for(const QPoint& from: fields())
+    {
+        for(const QPoint& dir: southAndEast)
+        {
+            int count = 0;
+            for(QPoint p = from; isField(p); p += dir)
+            {
+                millIndices[count] = positionToIndex(p);
+                ++count;
+                if(count == 3)
+                    mPossibleMills.push_back(millIndices);
             }
         }
     }
