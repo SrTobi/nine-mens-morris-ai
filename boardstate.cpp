@@ -279,6 +279,8 @@ int BoardState::numberOfMills(Stone stone) const
 {
     int result = 0;
     const auto& board = BoardModel::Inst();
+
+    // go through all possible mills and check if they are all filled with stones
     for(const auto& millIndices: board.possibleMills())
     {
         bool isMill = true;

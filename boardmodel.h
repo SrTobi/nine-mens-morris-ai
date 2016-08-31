@@ -6,22 +6,56 @@
 #include <QPoint>
 #include <array>
 
+/*
+ * A constant static model of a nine men's morris board
+ * It contains various functions to convert positions to indices.
+ */
 class BoardModel : public QObject
 {
     Q_OBJECT
 public:
+    /*
+     *  Number of fields where stones can be placed upon
+     */
     static const int BOARD_FIELDS_NUM = 24;
+
+    /*
+     *  Width of the board
+     */
     static const int BOARD_WIDTH = 7;
+
+    /*
+     *  Height of the board
+     */
     static const int BOARD_HEIGHT = 7;
+
+    /*
+     *  Number of fields including positions where no stone can be placed
+     */
     static const int BOARD_DIM = BOARD_WIDTH * BOARD_HEIGHT;
+
+    /*
+     *  Number of stones that allow to fly
+     */
     static const int NUM_STONES_ALLOW_FLY = 3;
+
+    /*
+     *  Number of stones each player can put in the put phase
+     */
     static const int NUM_STONES_TO_PUT = 9;
+
+
     const QPoint NORTH = QPoint(0, -1);
     const QPoint EAST =  QPoint(1, 0);
     const QPoint SOUTH = QPoint(0, 1);
     const QPoint WEST =  QPoint(-1, 0);
 
 public:
+    /*
+     * Return the board singleton.
+     *
+     * It can not be const, because const is not supported by QQmlContext::setContextProperty
+     */
     static BoardModel& Inst();
 
 

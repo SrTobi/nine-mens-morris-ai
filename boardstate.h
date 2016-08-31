@@ -22,6 +22,10 @@ const QString& to_string(Phase phase);
 
 //Q_ENUMS(Stone);
 
+/*
+ * A complete state of the game including current player and current phase.
+ * Can only be changed by a put or a remove operation
+ */
 class BoardState
 {
 public:

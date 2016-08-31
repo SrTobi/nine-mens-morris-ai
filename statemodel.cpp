@@ -16,6 +16,10 @@ StateModel::StateModel(const BoardState& state, const std::shared_ptr<Ai>& white
     for(int i = 0; i < BoardModel::BOARD_WIDTH * BoardModel::BOARD_HEIGHT; ++i)
         mRowTable.push_back(i);
 
+    /*
+     * If the player changes, look if the new player is an AI.
+     * If so, post an AiWorker to the threadpool. It will later report back
+     */
     connect(this, &StateModel::currentPlayerChanged,
             [this]()
     {
@@ -75,6 +79,7 @@ QModelIndex StateModel::parent(const QModelIndex &child) const
 
 int StateModel::rowCount(const QModelIndex& parent) const
 {
+    // the root index has the height * width rows because there are that many (possible) fields
     if(!parent.isValid())
         return BoardModel::BOARD_HEIGHT * BoardModel::BOARD_WIDTH;
 
@@ -82,8 +87,13 @@ int StateModel::rowCount(const QModelIndex& parent) const
 
     const auto& board = BoardModel::Inst();
     if(rowptr)
+    {
+        // if the internal pointer has a value then the index points to a stone on the second level
+        // so there are no children
         return 0;
-    else {
+    } else {
+        // the pointer is null. so the parent points to a field in the first level
+        // it can have at most one children: when there is a stone on that field
         const auto pos = rowToPosition(parent.row());
         return board.isField(pos) && mState.stoneAt(pos) != Stone::None? 1 : 0;
     }
@@ -339,22 +349,3 @@ QPoint StateModel::rowToPosition(int row) const
 {
     return QPoint(row % BoardModel::BOARD_WIDTH, row / BoardModel::BOARD_HEIGHT);
 }
-
-/*
-bool StateModel::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-    if (data(index, role) != value) {
-        // FIXME: Implement me!
-        emit dataChanged(index, index, QVector<int>() << role);
-        return true;
-    }
-    return false;
-}
-
-Qt::ItemFlags StateModel::flags(const QModelIndex &index) const
-{
-    if (!index.isValid())
-        return Qt::NoItemFlags;
-
-    return Qt::ItemIsEditable; // FIXME: Implement me!
-}*/

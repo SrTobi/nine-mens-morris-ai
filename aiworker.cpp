@@ -15,6 +15,8 @@ void AiWorker::run()
 
     auto wait = [&timer]()
     {
+        // an ai should not react immediately
+        // so wait for at least 500ms
         const int waittime = 500;
         if(timer.elapsed() < waittime)
             QThread::msleep(waittime - timer.elapsed());

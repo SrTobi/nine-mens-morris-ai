@@ -9,7 +9,14 @@ enum class Stone: unsigned char {
     White
 };
 
+/*
+ *  Gets the opponent stone
+ */
 Stone opponent(Stone stone);
+
+/*
+ *  Returns the color name of the stone
+ */
 const QString& to_string(Stone stone);
 
 

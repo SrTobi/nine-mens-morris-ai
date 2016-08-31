@@ -5,7 +5,9 @@
 #include "statemodel.h"
 
 
-
+/*
+ * The AiWorker executes the AI and reports the resulting move/put to the stateModel
+ */
 class AiWorker: public QObject, public QRunnable
 {
     Q_OBJECT
@@ -15,7 +17,14 @@ public:
     void run() override;
 
 signals:
+    /*
+     * The ai calculated a put and requests to change the model accordingly
+     */
     void requestPut(Put put);
+
+    /*
+     * The ai calculated a move and requests to change the model accordingly
+     */
     void requestMove(Move move);
 
 private:

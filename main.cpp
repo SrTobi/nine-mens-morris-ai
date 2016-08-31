@@ -16,10 +16,6 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Put>();
 
     BoardState state;
-    //state.setStoneAt(3, Stone::Black);
-    //state.setStoneAt(4, Stone::White);
-    /*for(int i = 0; i < 16; ++i)
-        state.put(i);//*/
     StateModel stateModel(state, nullptr, std::unique_ptr<RandomAi>(new RandomAi()));
     BoardModel& boardModel = BoardModel::Inst();
     auto* ctx = engine.rootContext();

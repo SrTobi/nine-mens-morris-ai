@@ -6,7 +6,9 @@
 
 class BoardState;
 
-
+/*
+ * Interface for AIs. They need to calculate a next move or a next put
+ */
 class Ai
 {
 public:

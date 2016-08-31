@@ -5,6 +5,12 @@
 #include <QObject>
 #include "stone.h"
 
+
+/*
+ * Represents a move operation which can be used on a BoardState
+ * It contains a move (i.e. moving a stone from one position to another)
+ * and/or a remove (i.e. removing an opponents stone).
+ */
 class Move
 {
 public:
@@ -34,6 +40,11 @@ private:
 };
 Q_DECLARE_METATYPE(Move)
 
+/*
+ * Represents a put operation which can be used on a BoardState
+ * It contains a put (i.e. putting a stone on a position)
+ * and optionally an additional remove (i.e. removing an opponents stone).
+ */
 class Put
 {
 public:
