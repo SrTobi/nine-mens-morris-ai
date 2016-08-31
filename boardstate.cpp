@@ -85,11 +85,11 @@ bool BoardState::isValidMove(const Move& move) const
         if(stonesOf(turn()) > BoardModel::NUM_STONES_ALLOW_FLY && !board.areAdjacentFields(move.fromIdx(), move.toIdx()))
             return false;
 
-        if(move.isRemoving())
+        /*if(move.isRemoving())
         {
             if(millAt(move.to()) != turn())
                 return false;
-        }
+        }*/
     }
     else if(move.isRemoving())
     {

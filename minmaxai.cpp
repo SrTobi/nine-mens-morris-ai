@@ -11,7 +11,7 @@ Move MinMaxAi::nextMove(const BoardState &state)
         auto clone = state;
         clone.move(move);
 
-        double rate = miniMax(4, clone, state.opponent(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+        double rate = miniMax(6, clone, state.opponent(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
         if(rate < worstRate)
         {
             worstRate = rate;
@@ -70,19 +70,19 @@ void MinMaxAi::generateNexStates(const BoardState& state, const std::function<bo
 
 double MinMaxAi::miniMax(int deep, const BoardState &state, Stone turn, double alpha, double beta) const
 {
-    const double winRate = 10000.0;
+    const double winRate = deep * 100.0;
     if(state.phase() == Phase::End)
         return state.turn() == turn? winRate : -winRate;
     if(deep <= 0)
         return rateState(state);
 
-    double maxValue = -std::numeric_limits<double>::infinity();
+    double maxValue = alpha;
 
     generateNexStates(state, [&](const BoardState& newState)
     {
         double newStateValue = -miniMax(deep - 1, newState, opponent(turn), -beta, -maxValue);
         maxValue = std::max(newStateValue, maxValue);
-        return true; //maxValue < beta;
+        return maxValue < beta;
     });
 
     return maxValue;
@@ -97,7 +97,7 @@ double MinMaxAi::rateState(const BoardState &state) const
 
     result += 40.0 * (state.stonesOf(turn) - state.stonesOf(opp));
     result += 1.0 * (state.possibleAdjacentMoves(turn) - state.possibleAdjacentMoves(opp));
-    result += 40.0 * state.numberOfMills(turn) - 30.0 * state.numberOfMills(opp);
+    result += 20.0 * state.numberOfMills(turn) - 10.0 * state.numberOfMills(opp);
 
     return result;
 }
