@@ -9,7 +9,8 @@ SOURCES += main.cpp \
     statemodel.cpp \
     move.cpp \
     stone.cpp \
-    aiworker.cpp
+    aiworker.cpp \
+    randomai.cpp
 
 RESOURCES += qml.qrc
 
@@ -26,4 +27,5 @@ HEADERS += \
     move.h \
     stone.h \
     ai.h \
-    aiworker.h
+    aiworker.h \
+    randomai.h

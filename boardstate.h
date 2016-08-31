@@ -43,6 +43,8 @@ public:
     void put(const QPoint& pos);
     void put(const Put& put);
 
+    bool hasRemovableStones(Stone stone) const;
+    bool canMove(Stone stone) const;
     Stone millAt(int idx) const;
     Stone millAt(const QPoint& pos) const;
 
@@ -61,6 +63,7 @@ public:
 private:
     void setStoneAt(int idx, Stone stone);
     void setStoneAt(const QPoint& pos, Stone stone);
+    void checkForLose();
 
 private:
     std::array<Stone, BoardModel::BOARD_FIELDS_NUM> mFields;

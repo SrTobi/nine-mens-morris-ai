@@ -43,6 +43,7 @@ public:
                  int role = Qt::EditRole) override;
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;*/
+    Q_INVOKABLE void initGame(const QString& whiteAi, const QString& blackAi);
     Q_INVOKABLE const QString& currentPlayer() const;
     Q_INVOKABLE const QString& phase() const;
     Q_INVOKABLE bool isValidMove(const QPoint& from, const QPoint& to) const;

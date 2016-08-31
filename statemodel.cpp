@@ -3,6 +3,7 @@
 #include <QThreadPool>
 #include "statemodel.h"
 #include "aiworker.h"
+#include "randomai.h"
 #include "boardmodel.h"
 
 
@@ -136,6 +137,26 @@ QHash<int, QByteArray> StateModel::roleNames() const
     roles[(int)StateRole::IsField] = "isField";
     roles[(int)StateRole::Stone] = "stone";
     return roles;
+}
+
+void StateModel::initGame(const QString &whiteAi, const QString &blackAi)
+{
+    auto make_ai = [](const QString& aiName) -> std::shared_ptr<Ai>
+    {
+        if(aiName == "random")
+            return std::make_shared<RandomAi>();
+        return nullptr;
+    };
+
+    mWhiteAi = make_ai(whiteAi);
+    mBlackAi = make_ai(blackAi);
+
+    beginResetModel();
+    mState = BoardState();
+    endResetModel();
+
+    emit phaseChanged();
+    emit currentPlayerChanged();
 }
 
 bool StateModel::isValidMove(const QPoint &from, const QPoint &to) const

@@ -31,6 +31,15 @@ void BoardState::setStoneAt(const QPoint &pos, Stone stone)
     setStoneAt(model.positionToIndex(pos), stone);
 }
 
+void BoardState::checkForLose()
+{
+    if(phase() == Phase::Move && !canMove(turn()))
+    {
+        mTurn = opponent();
+        mPhase = Phase::End;
+    }
+}
+
 int BoardState::whiteStones() const
 {
     return stonesOf(Stone::White);
@@ -113,15 +122,7 @@ void BoardState::move(const Move& move)
                 return;
             }
 
-            const auto& board = BoardModel::Inst();
-            // check if a stone stoneof the opponent can be removed!
-            auto& fields = board.fields();
-            int numRemovableStones = std::count_if(fields.begin(), fields.end(),
-                                                   [this](const QPoint& pos)
-                                                    {
-                                                        return stoneAt(pos) == opponent() && millAt(pos) == Stone::None;
-                                                    });
-            if(numRemovableStones <= 0)
+            if(!hasRemovableStones(opponent()))
             {
                 mPhase = Phase::Move;
                 nextTurn = true;
@@ -144,6 +145,8 @@ void BoardState::move(const Move& move)
 
     if(nextTurn)
         mTurn = opponent();
+
+    checkForLose();
 }
 
 bool BoardState::isValidPut(const Put &put) const
@@ -189,14 +192,55 @@ void BoardState::put(const Put &put)
     ++mPutStones;
     setStoneAt(idx, turn());
 
-    if(millAt(idx) == turn())
+    if(millAt(idx) == turn() && hasRemovableStones(opponent()))
     {
         mPhase = Phase::PutRemove;
     } else {
         mTurn = opponent();
         if(mPutStones >= BoardModel::NUM_STONES_TO_PUT * 2)
+        {
             mPhase = Phase::Move;
+            checkForLose();
+        }
     }
+}
+
+bool BoardState::hasRemovableStones(Stone stone) const
+{
+
+    const auto& board = BoardModel::Inst();
+    // check if a stone stoneof the opponent can be removed!
+    auto& fields = board.fieldIndices();
+    int numRemovableStones = std::count_if(fields.begin(), fields.end(),
+                                           [&](int pos)
+                                            {
+                                                return stoneAt(pos) == stone && millAt(pos) == Stone::None;
+                                            });
+    return numRemovableStones > 0;
+}
+
+bool BoardState::canMove(Stone stone) const
+{
+    const auto& board = BoardModel::Inst();
+    Q_ASSERT(mPhase == Phase::Move);
+    for(int from = 0; from < BoardModel::BOARD_FIELDS_NUM; ++from)
+    {
+        if(stoneAt(from) == stone)
+        {
+            const auto& possibleFields = stonesOf(stone) <= BoardModel::NUM_STONES_ALLOW_FLY?
+                            board.fieldIndices() : board.adjacentFields(from);
+            for(int to : possibleFields)
+            {
+                Move move(from, to);
+                if(isValidMove(move))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 Stone BoardState::millAt(int idx) const

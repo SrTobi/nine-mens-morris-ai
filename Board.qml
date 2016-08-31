@@ -5,6 +5,13 @@ Rectangle {
     id: boardRect
     color: "#c18a34"
 
+    signal gameEnded (string winner)
+    property bool playable: true
+    property bool inEndState: stateModel.phase === "end"
+    onInEndStateChanged: {
+        boardRect.gameEnded(stateModel.currentPlayer)
+    }
+
     anchors.fill: parent
 
     Rectangle {
@@ -24,9 +31,12 @@ Rectangle {
         }
 
         property var movedStoneOriginField: null
+        property bool playable: boardRect.playable && !inEndState
         property bool inMoveState: stateModel.phase === "move";
         property bool inPutState: stateModel.phase === "put";
         property bool inRemoveState: stateModel.phase === "remove";
+        property bool inEndState: boardRect.inEndState
+
 
         id: board
         color: "#c18a34"
@@ -63,7 +73,7 @@ Rectangle {
                     id: fieldMouseArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    enabled: isField
+                    enabled: isField && board.playable;
 
                     onClicked: {
                         if(board.inPutState && !isOccupied)
@@ -77,7 +87,7 @@ Rectangle {
                     id: dropArea
                     keys: ["ninemensmorris/stone"]
                     anchors.fill: parent
-                    enabled: board.inMoveState && stateModel.isMoving && stateModel.isValidMoveEnd(position)
+                    enabled: board.playable && board.inMoveState && stateModel.isMoving && stateModel.isValidMoveEnd(position)
 
                     onDropped: {
                         console.debug("dropped(" + position + ")")
@@ -120,11 +130,11 @@ Rectangle {
                             height: field.height
 
                             MouseArea {
-                                property bool canBeDragged: board.inMoveState && stateModel.currentPlayer == stone && stateModel.isMovablePlayer(stone)
+                                property bool canBeDragged: board.inMoveState && stateModel.currentPlayer === stone && stateModel.isMovablePlayer(stone)
                                 id: stoneMouseArea
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                enabled: canBeDragged
+                                enabled: canBeDragged && board.playable;
                                 drag.target: stoneEntity
                             }
 
@@ -239,7 +249,7 @@ Rectangle {
                         },*/
                         State {
                             name: "hoverPossiblePut"
-                            when: board.inPutState && !isOccupied && fieldMouseArea.containsMouse
+                            when: board.inPutState && stateModel.isMovablePlayer(stateModel.currentPlayer) && !isOccupied && fieldMouseArea.containsMouse
                             PropertyChanges {
                                 target: fieldEntity
                                 source: board.stoneNameToImage(stateModel.currentPlayer)

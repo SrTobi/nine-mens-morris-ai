@@ -1,36 +1,10 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <statemodel.h>
-#include <boardmodel.h>
+#include "statemodel.h"
+#include "boardmodel.h"
+#include "randomai.h"
 
-
-class RandomAi: public Ai
-{
-public:
-    Move nextMove(const BoardState& state)
-    {
-        Move move;
-        state.generateMoves([&](const Move& m)
-        {
-            move = m;
-            return rand() % 3 > 0;
-        });
-        return move;
-    }
-
-    Put nextPut(const BoardState &state)
-    {
-        Put put;
-        state.generatePuts([&](const Put& p)
-        {
-            put = p;
-            return rand() % 3 > 0;
-        });
-
-        return put;
-    }
-};
 
 int main(int argc, char *argv[])
 {
