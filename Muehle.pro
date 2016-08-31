@@ -8,7 +8,8 @@ SOURCES += main.cpp \
     boardmodel.cpp \
     statemodel.cpp \
     move.cpp \
-    stone.cpp
+    stone.cpp \
+    aiworker.cpp
 
 RESOURCES += qml.qrc
 
@@ -23,4 +24,6 @@ HEADERS += \
     boardmodel.h \
     statemodel.h \
     move.h \
-    stone.h
+    stone.h \
+    ai.h \
+    aiworker.h

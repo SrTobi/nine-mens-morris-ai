@@ -1,14 +1,43 @@
 #include <qdebug.h>
+#include <QRunnable>
+#include <QThreadPool>
 #include "statemodel.h"
+#include "aiworker.h"
 #include "boardmodel.h"
 
-StateModel::StateModel(const BoardState& state, bool whitePlayerMovable, bool blackPlayerMovable)
+
+StateModel::StateModel(const BoardState& state, const std::shared_ptr<Ai>& whiteAi, const std::shared_ptr<Ai>& blackAi)
     : mState(state)
-    , mBlackMovable(blackPlayerMovable)
-    , mWhiteMovable(whitePlayerMovable)
+    , mWhiteAi(whiteAi)
+    , mBlackAi(blackAi)
 {
     for(int i = 0; i < BoardModel::BOARD_WIDTH * BoardModel::BOARD_HEIGHT; ++i)
         mRowTable.push_back(i);
+
+    connect(this, &StateModel::currentPlayerChanged,
+            [this]()
+    {
+        std::shared_ptr<Ai> ai = nullptr;
+        switch (mState.turn()) {
+        case Stone::Black:
+            ai = mBlackAi;
+            break;
+        case Stone::White:
+            ai = mWhiteAi;
+            break;
+        default:
+            break;
+        }
+
+        if(ai)
+        {
+            Q_ASSERT(mState.phase() == Phase::Put || mState.phase() == Phase::Move);
+            AiWorker* worker = new AiWorker(ai, mState, this);
+            connect(worker, &AiWorker::requestMove, this, &StateModel::processAiMove);
+            connect(worker, &AiWorker::requestPut, this, &StateModel::processAiPut);
+            QThreadPool::globalInstance()->start(worker);
+        }
+    });
 }
 
 QModelIndex StateModel::index(int row, int column, const QModelIndex &parent) const
@@ -158,9 +187,9 @@ bool StateModel::isMoving() const
 bool StateModel::isMovablePlayer(const QString &name) const
 {
     if(name == to_string(Stone::White)) {
-        return mWhiteMovable;
+        return !mWhiteAi;
     } else if(name == to_string(Stone::Black)) {
-        return mBlackMovable;
+        return !mBlackAi;
     }
     return false;
 }
@@ -260,6 +289,21 @@ void StateModel::remove(const QPoint &to)
 
     qDebug() << "After remove";
     qDebug() << mState.toString().toStdString().c_str();
+}
+
+void StateModel::processAiPut(Put put)
+{
+    this->put(put.to());
+    if(put.isRemoving())
+        this->remove(put.remove());
+}
+
+void StateModel::processAiMove(Move move)
+{
+    this->startMove(move.from());
+    this->endMove(move.to());
+    if(move.isRemoving())
+        this->remove(move.remove());
 }
 
 int StateModel::positionToRow(const QPoint &pos) const

@@ -50,6 +50,9 @@ bool BoardState::isValidMove(const Move& move) const
 {
     const auto& board = BoardModel::Inst();
 
+    if(!move.isValid())
+        return false;
+
     if(move.isRemoving())
     {
         if(stoneAt(move.removeIdx()) != opponent())
@@ -132,7 +135,7 @@ void BoardState::move(const Move& move)
     {
         Q_ASSERT(phase() == Phase::Remove || phase() == Phase::PutRemove);
         setStoneAt(move.removeIdx(), Stone::None);
-        if(phase() == Phase::PutRemove)
+        if(phase() == Phase::PutRemove && mPutStones < BoardModel::NUM_STONES_TO_PUT*2)
             mPhase = Phase::Put;
         else
             mPhase = Phase::Move;
@@ -143,10 +146,45 @@ void BoardState::move(const Move& move)
         mTurn = opponent();
 }
 
+bool BoardState::isValidPut(const Put &put) const
+{
+    if(!put.isValid())
+        return false;
+
+    if(phase() != Phase::Put)
+        return false;
+
+    if(stoneAt(put.toIdx()) != Stone::None)
+        return false;
+
+    if(put.isRemoving())
+    {
+        if(stoneAt(put.removeIdx()) != opponent())
+            return false;
+
+        if(millAt(put.removeIdx()) == opponent())
+            return false;
+    }
+
+    return true;
+}
+
 void BoardState::put(int idx)
 {
-    Q_ASSERT(phase() == Phase::Put);
-    Q_ASSERT(stoneAt(idx) == Stone::None);
+    Put put(idx);
+    this->put(put);
+}
+
+void BoardState::put(const QPoint &pos)
+{
+    auto& model = BoardModel::Inst();
+    put(model.positionToIndex(pos));
+}
+
+void BoardState::put(const Put &put)
+{
+    int idx = put.toIdx();
+    Q_ASSERT(isValidPut(put));
 
     ++mPutStones;
     setStoneAt(idx, turn());
@@ -154,18 +192,11 @@ void BoardState::put(int idx)
     if(millAt(idx) == turn())
     {
         mPhase = Phase::PutRemove;
-    } else
-    {
+    } else {
         mTurn = opponent();
         if(mPutStones >= BoardModel::NUM_STONES_TO_PUT * 2)
             mPhase = Phase::Move;
     }
-}
-
-void BoardState::put(const QPoint &pos)
-{
-    auto& model = BoardModel::Inst();
-    put(model.positionToIndex(pos));
 }
 
 Stone BoardState::millAt(int idx) const
@@ -176,7 +207,7 @@ Stone BoardState::millAt(int idx) const
 
 Stone BoardState::millAt(const QPoint& pos) const
 {
-    auto& board = BoardModel::Inst();
+    const auto& board = BoardModel::Inst();
 
     Stone stone = stoneAt(pos);
     if(stone != Stone::None)
@@ -200,6 +231,75 @@ Stone BoardState::millAt(const QPoint& pos) const
         }
     }
     return Stone::None;
+}
+
+void BoardState::generateMoves(const std::function<bool(const Move&)> &callback) const
+{
+    const auto& board = BoardModel::Inst();
+
+    for(int from = 0; from < BoardModel::BOARD_FIELDS_NUM; ++from)
+    {
+        if(stoneAt(from) == turn())
+        {
+            const auto& possibleFields = stonesOf(turn()) <= BoardModel::NUM_STONES_ALLOW_FLY?
+                            board.fieldIndices() : board.adjacentFields(from);
+            for(int to : possibleFields)
+            {
+                Move move(from, to);
+                if(isValidMove(move))
+                {
+                    BoardState clone = *this;
+                    clone.move(move);
+                    if(clone.phase() == Phase::Remove)
+                    {
+                        for(int rfield = 0; rfield < BoardModel::BOARD_FIELDS_NUM; ++rfield)
+                        {
+                            Move moveRemove(from, to, rfield);
+                            if(isValidMove(moveRemove))
+                            {
+                                if(!callback(moveRemove))
+                                    return;
+                            }
+                        }
+                    }else{
+                        if(!callback(move))
+                            return;
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+void BoardState::generatePuts(const std::function<bool(const Put&)> &callback) const
+{
+    Q_ASSERT(phase() == Phase::Put);
+
+    for(int field = 0; field < BoardModel::BOARD_FIELDS_NUM; ++field)
+    {
+        Put p(field);
+        if(isValidPut(p))
+        {
+            BoardState clone = *this;
+            clone.put(p);
+            if(clone.phase() == Phase::PutRemove)
+            {
+                for(int rfield = 0; rfield < BoardModel::BOARD_FIELDS_NUM; ++rfield)
+                {
+                    Put putRemove(field, rfield);
+                    if(isValidPut(putRemove))
+                    {
+                        if(!callback(putRemove))
+                            return;
+                    }
+                }
+            }else{
+                if(!callback(p))
+                    return;
+            }
+        }
+    }
 }
 
 Stone BoardState::turn() const

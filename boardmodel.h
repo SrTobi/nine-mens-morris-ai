@@ -30,6 +30,7 @@ public:
     Q_INVOKABLE const QVector<int> &adjacentFields(int idx) const;
     const QVector<QPoint>& adjacentFields(const QPoint& pos) const;
 
+    const QVector<int>& fieldIndices() const;
     const QVector<QPoint>& fields() const;
 
     const QVector<QPoint>& directions() const;
@@ -44,6 +45,7 @@ private:
     BoardModel(const BoardModel&) = delete; // non construction-copyable
     BoardModel& operator=(const BoardModel&) = delete; // non copyable
 
+    QVector<int> mFieldIndices;
     const QVector<QPoint> mDirections;
     QVector<QVector<int>> mPositionToIndexMapping;
     QVector<QPoint> mIndexToPositionMapping;

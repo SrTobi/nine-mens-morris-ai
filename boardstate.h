@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QAbstractItemModel>
+#include <functional>
 #include "stone.h"
 #include "move.h"
 #include "boardmodel.h"
@@ -37,11 +38,16 @@ public:
     bool isValidMove(const Move& move) const;
     void move(const Move& move);
 
+    bool isValidPut(const Put& put) const;
     void put(int idx);
     void put(const QPoint& pos);
+    void put(const Put& put);
 
     Stone millAt(int idx) const;
     Stone millAt(const QPoint& pos) const;
+
+    void generateMoves(const std::function<bool(const Move& move)>& callback) const;
+    void generatePuts(const std::function<bool(const Put& put)>& callback) const;
 
     Stone turn() const;
     Stone opponent() const;

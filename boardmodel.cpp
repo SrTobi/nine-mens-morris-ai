@@ -24,9 +24,14 @@ const QVector<int> &BoardModel::adjacentFields(int idx) const
     return mAdjacentIndexLists.at(idx);
 }
 
-const QVector<QPoint> &BoardModel::adjacentFields(const QPoint &pos) const
+const QVector<QPoint>& BoardModel::adjacentFields(const QPoint &pos) const
 {
     return mAdjacentPositionLists.at(positionToIndex(pos));
+}
+
+const QVector<int>& BoardModel::fieldIndices() const
+{
+    return mFieldIndices;
 }
 
 const QVector<QPoint> &BoardModel::fields() const
@@ -87,6 +92,8 @@ BoardModel::BoardModel()
     , mAdjacentIndexLists(BOARD_FIELDS_NUM)
     , mAdjacentPositionLists(BOARD_FIELDS_NUM)
 {
+    for(int i = 0; i < BOARD_FIELDS_NUM; ++i)
+        mFieldIndices.push_back(i);
     /*
      * Template of the board
      * X = a field, where a stone can be put

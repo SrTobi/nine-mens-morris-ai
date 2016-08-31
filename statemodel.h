@@ -3,6 +3,8 @@
 
 #include <QAbstractItemModel>
 #include <vector>
+#include <memory>
+#include "ai.h"
 #include "boardstate.h"
 
 class StateModel : public QAbstractItemModel
@@ -11,6 +13,7 @@ class StateModel : public QAbstractItemModel
     Q_PROPERTY(QString currentPlayer READ currentPlayer NOTIFY currentPlayerChanged)
     Q_PROPERTY(bool isMoving READ isMoving NOTIFY isMovingChanged)
     Q_PROPERTY(QString phase READ phase NOTIFY phaseChanged)
+
 public:
     enum class StateRole {
         Position = Qt::UserRole + 1,
@@ -20,7 +23,7 @@ public:
     };
 
 public:
-    explicit StateModel(const BoardState& state, bool whitePlayerMovable, bool blackPlayerMovable);
+    explicit StateModel(const BoardState& state, const std::shared_ptr<Ai>& whiteAi, const std::shared_ptr<Ai>& blackAi);
 
     QModelIndex parent(const QModelIndex &child) const override;
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
@@ -54,6 +57,8 @@ public slots:
     void endMove(const QPoint& to);
     void put(const QPoint& to);
     void remove(const QPoint& to);
+    void processAiPut(Put put);
+    void processAiMove(Move move);
 
 signals:
     void currentPlayerChanged();
@@ -66,8 +71,8 @@ private:
 private:
     QScopedPointer<QPoint> mMoveStart;
     BoardState mState;
-    const bool mBlackMovable;
-    const bool mWhiteMovable;
+    std::shared_ptr<Ai> mWhiteAi;
+    std::shared_ptr<Ai> mBlackAi;
 
     std::vector<int> mRowTable;
 };
