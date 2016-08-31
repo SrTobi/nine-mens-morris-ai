@@ -100,21 +100,28 @@ Rectangle {
                     interactive: false
 
                     add: Transition {
+                        //enabled: board.movedStoneOriginField == null
                         //id: addTrans
-                        //NumberAnimation { properties: "opacity"; duration: 200; from: 0; to: 1; easing.type: Easing.OutCubic }
+                        NumberAnimation { properties: "opacity"; duration: 700; from: 0; to: 1; easing.type: Easing.OutCubic }
                         /*enabled: board.movedStoneOriginField != null
                         property var origin: board.movedStoneOriginField == null? Qt.point(0, 0) : stoneView.mapFromItem(board.movedStoneOriginField, 0, 0)
                         NumberAnimation { properties: "y"; duration: 2000; from: addTrans.origin.y; easing.type: Easing.InCubic }
-                        NumberAnimation { properties: "x"; duration: 2000; from: addTrans.origin.x; easing.type: Easing.InCubic }
+                        NumberAnimation { properties: "x"; duration: 2000; from: addTrans.origin.x; easing.type: Easing.InCubic }*/
                         onRunningChanged: {
-                            console.debug("running[" + origin + "]: " + running)
+                            console.debug("add running[" + board.movedStoneOriginField + "]: " + running)
                             if(!running)
                                 board.movedStoneOriginField = null
-                        }*/
+                        }
 
                     }
                     remove: Transition {
-                        //NumberAnimation { properties: "opacity"; duration: 200; from: 1; to: 0; easing.type: Easing.OutCubic }
+                        NumberAnimation { properties: "opacity"; duration: 700; from: 1; to: 0; easing.type: Easing.OutCubic }
+                        //enabled: board.movedStoneOriginField == null
+                        onRunningChanged: {
+                            console.debug("remove running[" + board.movedStoneOriginField + "]: " + running)
+                            if(!running)
+                                board.movedStoneOriginField = null
+                        }
                     }
 
 
