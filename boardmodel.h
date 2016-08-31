@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QVector>
 #include <QPoint>
+#include <array>
 
 class BoardModel : public QObject
 {
@@ -15,10 +16,10 @@ public:
     static const int BOARD_DIM = BOARD_WIDTH * BOARD_HEIGHT;
     static const int NUM_STONES_ALLOW_FLY = 3;
     static const int NUM_STONES_TO_PUT = 9;
-    static constexpr QPoint NORTH = QPoint(0, -1);
-    static constexpr QPoint EAST =  QPoint(1, 0);
-    static constexpr QPoint SOUTH = QPoint(0, 1);
-    static constexpr QPoint WEST =  QPoint(-1, 0);
+    const QPoint NORTH = QPoint(0, -1);
+    const QPoint EAST =  QPoint(1, 0);
+    const QPoint SOUTH = QPoint(0, 1);
+    const QPoint WEST =  QPoint(-1, 0);
 
 public:
     static BoardModel& Inst();
